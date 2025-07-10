@@ -12,11 +12,12 @@ import io.github.eggohito.neo_apoli.util.EntityParameter;
 import io.github.eggohito.neo_apoli.util.MapCodecUtil;
 import io.github.eggohito.neo_apoli.util.PacketCodecUtil;
 import io.github.eggohito.neo_apoli.util.context.Context;
+import io.github.eggohito.neo_apoli.util.meso.MesoUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.context.ContextParameter;
 import net.minecraft.util.dynamic.Codecs;
 
 import java.util.Map;
@@ -28,7 +29,7 @@ public final class SwapEntityContextBiEntityCondition extends BiEntityCondition 
 
 	public static final MapCodec<SwapEntityContextBiEntityCondition> CODEC = MapCodecUtil.lazy(SwapEntityContextBiEntityCondition.class.getSimpleName(), () -> RecordCodecBuilder.mapCodec(instance -> instance.group(
 		BiEntityCondition.CODEC.fieldOf("bientity_condition").forGetter(SwapEntityContextBiEntityCondition::biEntityCondition),
-		Codecs.nonEmptyMap(NeoApoliCodecs.ENTITY_PARAMETER_MAP).fieldOf("parameters").forGetter(SwapEntityContextBiEntityCondition::parameters)
+		MesoUtils.nonEmptyMap(NeoApoliCodecs.ENTITY_PARAMETER_MAP).fieldOf("parameters").forGetter(SwapEntityContextBiEntityCondition::parameters)
 	).apply(instance, SwapEntityContextBiEntityCondition::new)));
 
 	public static final PacketCodec<RegistryByteBuf, SwapEntityContextBiEntityCondition> PACKET_CODEC = PacketCodecUtil.lazy(SwapEntityContextBiEntityCondition.class.getSimpleName(), () -> PacketCodec.tuple(
@@ -61,9 +62,9 @@ public final class SwapEntityContextBiEntityCondition extends BiEntityCondition 
 	}
 
 	@Override
-	public Set<ContextParameter<?>> getAllowedParameters() {
+	public Set<LootContextParameter<?>> getAllowedParameters() {
 
-		ImmutableSet.Builder<ContextParameter<?>> builder = ImmutableSet.builder();
+		ImmutableSet.Builder<LootContextParameter<?>> builder = ImmutableSet.builder();
 		parameters().values().forEach(source -> builder.add(source.getParameter()));
 
 		return builder.build();

@@ -12,9 +12,9 @@ import lombok.EqualsAndHashCode;
 import net.minecraft.inventory.StackReference;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameterSet;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.context.LootContextTypes;
-import net.minecraft.loot.context.LootWorldContext;
 import net.minecraft.loot.function.LootFunction;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
@@ -53,10 +53,10 @@ public final class ApplyModifierItemAction extends ItemAction {
 
 		//	Since the ID is already validated, there should be no need to validate here...
 		LootFunction modifier = context.getServer().getReloadableRegistries().createRegistryLookup()
-			.getEntryOrThrow(this.modifier())
-			.value();
+			.getOptionalEntry(RegistryKeys.ITEM_MODIFIER, this.modifier())
+			.get().value();
 
-		LootWorldContext lootWorldContext = new LootWorldContext.Builder(context.getWorld())
+		LootContextParameterSet lootWorldContext = new LootContextParameterSet.Builder(context.getWorld())
 			.add(LootContextParameters.ORIGIN, context.optional(ContextParameters.POSITION).orElse(Vec3d.ZERO))
 			.addOptional(LootContextParameters.THIS_ENTITY, context.nullable(ContextParameters.THIS_ENTITY))
 			.build(LootContextTypes.COMMAND);
@@ -74,7 +74,7 @@ public final class ApplyModifierItemAction extends ItemAction {
 	@Override
 	public void validate(ErrorReporter reporter) {
 
-		Optional<RegistryEntryLookup<LootFunction>> optLookup = reporter.getWrapperLookup().flatMap(wrapperLookup -> wrapperLookup.getOptional(this.modifier().getRegistryRef()));
+		Optional<RegistryEntryLookup<LootFunction>> optLookup = reporter.getWrapperLookup().flatMap(wrapperLookup -> wrapperLookup.getOptionalWrapper(this.modifier().getRegistryRef()));
 		super.validate(reporter);
 
 		optLookup.ifPresentOrElse(

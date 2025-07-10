@@ -1,23 +1,23 @@
 package io.github.eggohito.neo_apoli.mixin.access;
 
-import net.minecraft.util.context.ContextParameter;
-import net.minecraft.util.context.ContextParameterMap;
+import net.minecraft.loot.context.LootContextParameter;
+import net.minecraft.loot.context.LootContextParameterSet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Map;
 
-@Mixin(ContextParameterMap.class)
+@Mixin(LootContextParameterSet.class)
 public interface ContextParameterMapAccessor {
 
 	@Accessor
-	Map<ContextParameter<?>, Object> getMap();
+	Map<LootContextParameter<?>, Object> getParameters();
 
-	@Mixin(ContextParameterMap.Builder.class)
+	@Mixin(LootContextParameterSet.Builder.class)
 	interface BuilderAccessor {
 
 		@Accessor
-		Map<ContextParameter<?>, Object> getMap();
+		Map<LootContextParameter<?>, Object> getParameters();
 
 	}
 

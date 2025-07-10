@@ -1,15 +1,16 @@
 package io.github.eggohito.neo_apoli.util.context;
 
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.context.ContextParameterMap;
-import net.minecraft.util.context.ContextType;
+
 
 import java.util.function.UnaryOperator;
 
 public class ServerContext extends Context {
 
-	ServerContext(ContextParameterMap parameters, ContextAware.ErrorReporter reporter, ContextType type, ServerWorld world) {
+	ServerContext(LootContextParameterSet parameters, ContextAware.ErrorReporter reporter, LootContextType type, ServerWorld world) {
 		super(parameters, reporter, type, world);
 	}
 

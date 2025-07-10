@@ -13,6 +13,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 
 import java.util.Objects;
@@ -22,7 +23,7 @@ import java.util.Objects;
 public final class EntityTypeEntityCondition extends EntityCondition {
 
 	public static final MapCodec<EntityTypeEntityCondition> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-		EntityType.CODEC.fieldOf("entity_type").forGetter(EntityTypeEntityCondition::entityType)
+		Registries.ENTITY_TYPE.getCodec().fieldOf("entity_type").forGetter(EntityTypeEntityCondition::entityType)
 	).apply(instance, EntityTypeEntityCondition::new));
 
 	public static final PacketCodec<RegistryByteBuf, EntityTypeEntityCondition> PACKET_CODEC = PacketCodec.tuple(

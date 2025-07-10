@@ -56,7 +56,7 @@ public interface SideMetaAction<A extends Action> {
 		CLIENT("client");
 
 		public static final Codec<Side> CODEC = StringIdentifiable.createBasicCodec(Side::values);
-		public static final PacketCodec<ByteBuf, Side> PACKET_CODEC = PacketCodecs.indexed(ValueLists.createIndexToValueFunction(Side::ordinal, Side.values(), ValueLists.OutOfBoundsHandling.WRAP), Side::ordinal);
+		public static final PacketCodec<ByteBuf, Side> PACKET_CODEC = PacketCodecs.indexed(ValueLists.createIdToValueFunction(Side::ordinal, Side.values(), ValueLists.OutOfBoundsHandling.WRAP), Side::ordinal);
 
 		final String name;
 		Side(String name) {

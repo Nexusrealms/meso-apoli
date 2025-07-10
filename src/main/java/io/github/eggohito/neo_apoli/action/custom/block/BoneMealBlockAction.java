@@ -31,7 +31,7 @@ public final class BoneMealBlockAction extends BlockAction {
 	).apply(instance, BoneMealBlockAction::new));
 
 	public static final PacketCodec<RegistryByteBuf, BoneMealBlockAction> PACKET_CODEC = PacketCodec.tuple(
-		PacketCodecs.BOOLEAN, BoneMealBlockAction::showEffects,
+		PacketCodecs.BOOL, BoneMealBlockAction::showEffects,
 		BoneMealBlockAction::new
 	);
 

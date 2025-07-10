@@ -8,9 +8,9 @@ import io.github.eggohito.neo_apoli.condition.type.entity.EntityConditionTypes;
 import io.github.eggohito.neo_apoli.registry.NeoApoliRegistries;
 import io.github.eggohito.neo_apoli.util.RegistryUtil;
 import io.github.eggohito.neo_apoli.util.context.ContextParameters;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.context.ContextParameter;
 
 import java.util.Set;
 
@@ -28,7 +28,7 @@ public abstract class EntityCondition extends Condition {
 	}
 
 	@Override
-	public Set<ContextParameter<?>> getAllowedParameters() {
+	public Set<LootContextParameter<?>> getAllowedParameters() {
 		return Set.of(ContextParameters.THIS_ENTITY, ContextParameters.POSITION);
 	}
 

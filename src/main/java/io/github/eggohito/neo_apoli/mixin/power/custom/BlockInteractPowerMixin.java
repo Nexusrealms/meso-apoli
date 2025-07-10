@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import io.github.eggohito.neo_apoli.power.custom.BlockInteractPower;
 import io.github.eggohito.neo_apoli.util.BlockInteractionPhase;
 import io.github.eggohito.neo_apoli.util.PriorityPhase;
+import io.github.eggohito.neo_apoli.util.meso.MesoUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -14,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,12 +36,13 @@ public abstract class BlockInteractPowerMixin {
 		return BlockInteractPower.execute(player, hand, blockHitResult, BlockInteractionPhase.BLOCK, PriorityPhase.AFTER, zeroPriority$blockUseResultRef::set, zeroPriority$blockUseResultRef::get, () -> original);
 	}
 
-	@WrapOperation(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUseWithItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;"))
-	private ActionResult beforeUseBlockWithItem(BlockState blockState, ItemStack stack, World world, PlayerEntity player, Hand hand, BlockHitResult blockHitResult, Operation<ActionResult> original, @Share("zeroPriority$withItemResult") LocalRef<ActionResult> zeroPriority$withItemResultRef) {
-		return BlockInteractPower.execute(player, hand, blockHitResult, BlockInteractionPhase.BLOCK_WITH_ITEM, PriorityPhase.BEFORE, zeroPriority$withItemResultRef::set, zeroPriority$withItemResultRef::get, () -> original.call(blockState, player.getStackInHand(hand), world, player, hand, blockHitResult));
+	@WrapOperation(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUseWithItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ItemActionResult;"))
+	private ItemActionResult beforeUseBlockWithItem(BlockState blockState, ItemStack stack, World world, PlayerEntity player, Hand hand, BlockHitResult blockHitResult, Operation<ItemActionResult> original, @Share("zeroPriority$withItemResult") LocalRef<ActionResult> zeroPriority$withItemResultRef ) {
+
+		return MesoUtils.toItemActionResult(BlockInteractPower.execute(player, hand, blockHitResult, BlockInteractionPhase.BLOCK_WITH_ITEM, PriorityPhase.BEFORE, zeroPriority$withItemResultRef::set, zeroPriority$withItemResultRef::get, () -> original.call(blockState, player.getStackInHand(hand), world, player, hand, blockHitResult).toActionResult()));
 	}
 
-	@ModifyVariable(method = "interactBlock", at = @At("STORE"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUseWithItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;")), ordinal = 0)
+	@ModifyVariable(method = "interactBlock", at = @At("STORE"), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;onUseWithItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ItemActionResult;")), ordinal = 0)
 	private ActionResult afterUseBlockWithItem(ActionResult original, ServerPlayerEntity player, World world, ItemStack stack, Hand hand, BlockHitResult blockHitResult, @Share("zeroPriority$withItemResult") LocalRef<ActionResult> zeroPriority$withItemResultRef) {
 		return BlockInteractPower.execute(player, hand, blockHitResult, BlockInteractionPhase.BLOCK_WITH_ITEM, PriorityPhase.AFTER, zeroPriority$withItemResultRef::set, zeroPriority$withItemResultRef::get, () -> original);
 	}

@@ -10,12 +10,12 @@ import io.github.eggohito.neo_apoli.registry.NeoApoliRegistryKeys;
 import io.github.eggohito.neo_apoli.util.IdentifierAlias;
 import io.github.eggohito.neo_apoli.util.RegistryUtil;
 import io.github.eggohito.neo_apoli.util.context.ContextTypes;
+import net.minecraft.loot.context.LootContextType;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.context.ContextType;
 
 public class PowerTypes {
 
@@ -36,11 +36,11 @@ public class PowerTypes {
 
 	}
 
-	private static <P extends Power> PowerType<P> registerInternal(String path, ContextType contextType, MapCodec<P> mapCodec, PacketCodec<RegistryByteBuf, P> packetCodec) {
+	private static <P extends Power> PowerType<P> registerInternal(String path, LootContextType contextType, MapCodec<P> mapCodec, PacketCodec<RegistryByteBuf, P> packetCodec) {
 		return register(NeoApoli.id(path), contextType, mapCodec, packetCodec);
 	}
 
-	public static <P extends Power> PowerType<P> register(Identifier id, ContextType contextType, MapCodec<P> mapCodec, PacketCodec<RegistryByteBuf, P> packetCodec) {
+	public static <P extends Power> PowerType<P> register(Identifier id, LootContextType contextType, MapCodec<P> mapCodec, PacketCodec<RegistryByteBuf, P> packetCodec) {
 		return Registry.register(NeoApoliRegistries.POWER_TYPE, id, new PowerType<>(contextType, mapCodec, packetCodec));
 	}
 

@@ -66,7 +66,7 @@ public final class DamageBiEntityAction extends BiEntityAction {
 		Entity target = context.required(ContextParameters.TARGET);
 
 		DamageSource damageSource = new DamageSource(this.damageType(), actor);
-		target.damage(serverWorld, damageSource, amount);
+		target.damage(damageSource, amount);
 
 	}
 

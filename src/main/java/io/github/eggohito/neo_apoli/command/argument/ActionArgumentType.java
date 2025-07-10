@@ -17,6 +17,7 @@ import io.github.eggohito.neo_apoli.util.MiscUtil;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.serialize.ArgumentSerializer;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.network.PacketByteBuf;
@@ -30,10 +31,10 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public record ActionArgumentType(RegistryWrapper.WrapperLookup wrapperLookup, ActionCategory<?> category) implements ArgumentType<Action> {
-
+	//TODO make it generic again
 	@Override
 	public Action parse(StringReader reader) throws CommandSyntaxException {
-		return this.parse(reader, StringNbtReader.fromOps(NbtOps.INSTANCE));
+		return this.parse(reader, new StringNbtReader(reader));
 	}
 
 	@Override
@@ -41,19 +42,19 @@ public record ActionArgumentType(RegistryWrapper.WrapperLookup wrapperLookup, Ac
 		return CommandSource.suggestIdentifiers(ActionManager.streamIds(category()), builder);
 	}
 
-	private <I> Action parse(StringReader reader, StringNbtReader<I> snbtReader) throws CommandSyntaxException {
+	private Action parse(StringReader reader, StringNbtReader snbtReader) throws CommandSyntaxException {
 
-		RegistryOps<I> registryOps = wrapperLookup().getOps(snbtReader.getOps());
-		Dynamic<I> result = parseAsNbt(registryOps, reader, snbtReader);
+		RegistryOps<NbtElement> registryOps = wrapperLookup().getOps(NbtOps.INSTANCE);
+		Dynamic<NbtElement> result = parseAsNbt(registryOps, reader, snbtReader);
 
 		return category().entryCodec().parse(result).getOrThrow(err -> MiscUtil.createCommandException(() -> err));
 
 	}
 
-	static <I> Dynamic<I> parseAsNbt(RegistryOps<I> ops, StringReader reader, StringNbtReader<I> snbtReader) throws CommandSyntaxException {
+	static Dynamic<NbtElement> parseAsNbt(RegistryOps<NbtElement> ops, StringReader reader, StringNbtReader snbtReader) throws CommandSyntaxException {
 
 		int prevCursor = reader.getCursor();
-		I read = snbtReader.readAsArgument(reader);
+		NbtElement read = snbtReader.parseElement();
 
 		if (hasFinishedReading(reader)) {
 			return new Dynamic<>(ops, read);
@@ -99,7 +100,7 @@ public record ActionArgumentType(RegistryWrapper.WrapperLookup wrapperLookup, Ac
 
 		@Override
 		public Properties fromPacket(PacketByteBuf buf) {
-			return new Properties(this, NeoApoliRegistries.ACTION_CATEGORY.getValueOrThrow(buf.readRegistryKey(NeoApoliRegistryKeys.ACTION_CATEGORY)));
+			return new Properties(this, NeoApoliRegistries.ACTION_CATEGORY.getOrThrow(buf.readRegistryKey(NeoApoliRegistryKeys.ACTION_CATEGORY)));
 		}
 
 		@Override

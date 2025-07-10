@@ -69,7 +69,7 @@ public class CodecUtil {
 		E[] enumConstants = enumClass.getEnumConstants();
 
 		ToIntFunction<E> toOrdinal = Enum::ordinal;
-		IntFunction<E> fromOrdinal = ValueLists.createIndexToValueFunction(toOrdinal, enumConstants, ValueLists.OutOfBoundsHandling.CLAMP);
+		IntFunction<E> fromOrdinal = ValueLists.createIdToValueFunction(toOrdinal, enumConstants, ValueLists.OutOfBoundsHandling.CLAMP);
 
 		Function<E, String> toString = enumConstant -> enumConstant instanceof StringIdentifiable stringIdentifiable
 			? stringIdentifiable.asString()

@@ -16,8 +16,11 @@ import io.github.eggohito.neo_apoli.provider.meta.number.ConstantNumberProvider;
 import io.github.eggohito.neo_apoli.util.context.Context;
 import io.github.eggohito.neo_apoli.util.context.ContextAware;
 import io.github.eggohito.neo_apoli.util.context.ContextParameters;
+import io.github.eggohito.neo_apoli.util.meso.MesoUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.loot.context.LootContextParameter;
+import net.minecraft.loot.context.LootContextType;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
@@ -30,15 +33,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.context.ContextParameter;
-import net.minecraft.util.context.ContextType;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.minecraft.world.explosion.ExplosionBehavior;
-import net.minecraft.world.explosion.ExplosionImpl;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Optional;
@@ -46,14 +47,14 @@ import java.util.Set;
 
 public interface ExplodeMetaAction {
 
-	ContextType ENTITY_CONTEXT_TYPE = new ContextType.Builder()
+	LootContextType ENTITY_CONTEXT_TYPE = new LootContextType.Builder()
 		.require(ContextParameters.POSITION)
 		.allow(ContextParameters.THIS_ENTITY)
 		.allow(ContextParameters.ACTOR)
 		.allow(ContextParameters.TARGET)
 		.build();
 
-	ContextType BLOCK_CONTEXT_TYPE = new ContextType.Builder()
+	LootContextType BLOCK_CONTEXT_TYPE = new LootContextType.Builder()
 		.require(ContextParameters.POSITION)
 		.require(ContextParameters.BLOCK_STATE)
 		.allow(ContextParameters.THIS_ENTITY)
@@ -82,15 +83,20 @@ public interface ExplodeMetaAction {
 		ExplosionDisplay display = this.display();
 
 		CustomExplosionBehavior behavior = new CustomExplosionBehavior(this.damageableBiEntityCondition(), this.destructibleBlockCondition(), property, context);
-		ExplosionImpl explosion = new ExplosionImpl(
+		Explosion explosion = new Explosion(
 			serverWorld,
 			context.nullable(ContextParameters.THIS_ENTITY),
 			null,
 			behavior,
-			position,
+			position.getX(),
+			position.getY(),
+			position.getZ(),
 			property.power().nextFloat(context.makeChild(".power")),
 			property.createFire(),
-			property.destructionType()
+			property.destructionType(),
+			display.smallParticle(),
+			display.largeParticle(),
+			display.soundEvent()
 		);
 
 		if (context.hasErrors()) {
@@ -98,7 +104,7 @@ public interface ExplodeMetaAction {
 		}
 
 		ParticleEffect particle = display.getParticle(explosion);
-		explosion.explode();
+		MesoUtils.explode(explosion, world);
 
 		for (ServerPlayerEntity serverPlayer : serverWorld.getPlayers()) {
 
@@ -106,14 +112,14 @@ public interface ExplodeMetaAction {
 				continue;
 			}
 
-			Optional<Vec3d> playerKnockback = Optional.ofNullable(explosion.getKnockbackByPlayer().get(serverPlayer));
-			serverPlayer.networkHandler.sendPacket(new ExplosionS2CPacket(position, playerKnockback, particle, display.soundEvent()));
+			Vec3d playerKnockback = explosion.getAffectedPlayers().get(serverPlayer);
+			serverPlayer.networkHandler.sendPacket(new ExplosionS2CPacket(position.getX(), position.getY(), position.getZ(), explosion.getPower(), explosion.getAffectedBlocks(), playerKnockback, explosion.getDestructionType(), particle, display.smallParticle(), display.soundEvent()));
 
 		}
 
 	}
 
-	default Set<ContextParameter<?>> getAllowedParameters() {
+	default Set<LootContextParameter<?>> getAllowedParameters() {
 		return Set.of(ContextParameters.POSITION);
 	}
 
@@ -215,7 +221,7 @@ public interface ExplodeMetaAction {
 			NeoApoliPacketCodecs.DESTRUCTION_TYPE, ExplosionProperty::destructionType,
 			NumberProvider.PACKET_CODEC, ExplosionProperty::power,
 			NumberProvider.PACKET_CODEC, ExplosionProperty::knockbackMultiplier,
-			PacketCodecs.BOOLEAN, ExplosionProperty::createFire,
+			PacketCodecs.BOOL, ExplosionProperty::createFire,
 			ExplosionProperty::new
 		);
 
@@ -241,8 +247,8 @@ public interface ExplodeMetaAction {
 			ExplosionDisplay::new
 		);
 
-		public ParticleEffect getParticle(ExplosionImpl explosion) {
-			return explosion.isSmall()
+		public ParticleEffect getParticle(Explosion explosion) {
+			return explosion.getPower() < 2.0F || !explosion.shouldDestroy()
 				? this.smallParticle()
 				: this.largeParticle();
 		}

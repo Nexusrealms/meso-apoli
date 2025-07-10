@@ -26,7 +26,7 @@ public record StringComparison(Comparator comparator, StringProvider first, Stri
 		Comparator.PACKET_CODEC, StringComparison::comparator,
 		StringProvider.PACKET_CODEC, StringComparison::first,
 		StringProvider.PACKET_CODEC, StringComparison::second,
-		PacketCodecs.BOOLEAN, StringComparison::caseSensitive,
+		PacketCodecs.BOOL, StringComparison::caseSensitive,
 		StringComparison::new
 	);
 

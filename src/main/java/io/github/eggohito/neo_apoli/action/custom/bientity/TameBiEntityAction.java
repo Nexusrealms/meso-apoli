@@ -33,7 +33,7 @@ public final class TameBiEntityAction extends BiEntityAction {
 
 			switch (context.required(ContextParameters.TARGET)) {
 				case TameableEntity tameableEntity ->
-					tameableEntity.setTamedBy(serverPlayer);
+					tameableEntity.setOwner(serverPlayer);
 				case AbstractHorseEntity abstractHorseEntity ->
 					abstractHorseEntity.bondWithPlayer(serverPlayer);
 				default -> {

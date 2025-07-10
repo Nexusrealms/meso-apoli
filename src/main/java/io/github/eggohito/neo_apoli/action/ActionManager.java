@@ -38,7 +38,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.util.profiler.Profilers;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.quiltmc.parsers.json.JsonReader;
@@ -50,6 +49,7 @@ import java.io.BufferedReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class ActionManager implements JsonResourceReloader {
@@ -74,32 +74,32 @@ public final class ActionManager implements JsonResourceReloader {
 	}
 
 	@Override
-	public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Executor prepareExecutor, Executor applyExecutor) {
+	public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
 
 		CompletableFuture<Map<ActionCategory<?>, Map<Identifier, List<TagGroupLoader.TrackedEntry>>>> preparedTagsFuture = CompletableFuture
-			.supplyAsync(() -> this.prepareTags(manager, Profilers.get()), prepareExecutor);
+			.supplyAsync(() -> this.prepareTags(manager), prepareExecutor);
 		CompletableFuture<Map<ActionCategory<?>, Map<Identifier, Entry>>> preparedElementsFuture = CompletableFuture
-			.supplyAsync(() -> this.prepareElements(manager, Profilers.get()), prepareExecutor);
+			.supplyAsync(() -> this.prepareElements(manager), prepareExecutor);
 
 		return preparedTagsFuture.thenCombine(preparedElementsFuture, Pair::of)
 			.thenCompose(synchronizer::whenPrepared)
 			.thenAcceptAsync(
 				preparedTagsAndElements -> {
-					this.applyElements(preparedTagsAndElements.getSecond(), manager, Profilers.get());
-					this.applyTags(preparedTagsAndElements.getFirst(), manager, Profilers.get());
+					this.applyElements(preparedTagsAndElements.getSecond(), manager);
+					this.applyTags(preparedTagsAndElements.getFirst(), manager);
 				},
 				applyExecutor
 			);
 
 	}
-
-	private Map<ActionCategory<?>, Map<Identifier, List<TagGroupLoader.TrackedEntry>>> prepareTags(ResourceManager manager, Profiler profiler) {
+	//MESO CHANGE - removed profiler
+	private Map<ActionCategory<?>, Map<Identifier, List<TagGroupLoader.TrackedEntry>>> prepareTags(ResourceManager manager) {
 
 		Map<ActionCategory<?>, Map<Identifier, List<TagGroupLoader.TrackedEntry>>> prepared = new Object2ObjectOpenHashMap<>();
 		for (var category : NeoApoliRegistries.ACTION_CATEGORY) {
 
 			String directory = RegistryKeys.getTagPath(category.registryRef());
-			TagGroupLoader<ActionEntry<?>> tagLoader = new TagGroupLoader<>((id, required) -> getEntryAsResult(category, id).result(), directory);
+			TagGroupLoader<ActionEntry<?>> tagLoader = new TagGroupLoader<>(id -> getEntryAsResult(category, id).result(), directory);
 
 			Map<Identifier, List<TagGroupLoader.TrackedEntry>> trackedEntries = tagLoader.loadTags(manager);
 
@@ -112,18 +112,17 @@ public final class ActionManager implements JsonResourceReloader {
 		return prepared;
 
 	}
-
-	private void applyTags(Map<ActionCategory<?>, Map<Identifier, List<TagGroupLoader.TrackedEntry>>> prepared, ResourceManager manager, Profiler profiler) {
+	//MESO CHANGE - removed profiler
+	private void applyTags(Map<ActionCategory<?>, Map<Identifier, List<TagGroupLoader.TrackedEntry>>> prepared, ResourceManager manager) {
 
 		LOGGER.info("Parsing action tags from data packs...");
 		TAGS.clear();
 
 		prepared.forEach((category, entries) -> {
-
 			String directory = RegistryKeys.getPath(category.registryRef());
-			TagGroupLoader<ActionEntry<?>> tagLoader = new TagGroupLoader<>((id, required) -> getEntryAsResult(category, id).result(), directory);
+			TagGroupLoader<ActionEntry<?>> tagLoader = new TagGroupLoader<>(id -> getEntryAsResult(category, id).result(), directory);
 
-			TAGS.put(category, tagLoader.buildGroup(entries));
+			addToTags(category, tagLoader.buildGroup(entries));
 
 		});
 
@@ -134,8 +133,11 @@ public final class ActionManager implements JsonResourceReloader {
 		TAGS.trim();
 
 	}
-
-	private Map<ActionCategory<?>, Map<Identifier, Entry>> prepareElements(ResourceManager manager, Profiler profiler) {
+	private void addToTags(ActionCategory<?> c, Map<Identifier, Collection<ActionEntry<?>>> m){
+		TAGS.put(c, m.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().toList())));
+	}
+	//MESO CHANGE - removed profiler
+	private Map<ActionCategory<?>, Map<Identifier, Entry>> prepareElements(ResourceManager manager) {
 
 		Map<ActionCategory<?>, Map<Identifier, Entry>> prepared = new Object2ObjectOpenHashMap<>();
 		for (var category : NeoApoliRegistries.ACTION_CATEGORY) {
@@ -194,8 +196,8 @@ public final class ActionManager implements JsonResourceReloader {
 		return prepared;
 
 	}
-
-	private void applyElements(Map<ActionCategory<?>, Map<Identifier, Entry>> prepared, ResourceManager manager, Profiler profiler) {
+	//MESO CHANGE - removed profiler
+	private void applyElements(Map<ActionCategory<?>, Map<Identifier, Entry>> prepared, ResourceManager manager) {
 
 		LOGGER.info("Parsing actions from data packs...");
 		startLoading();

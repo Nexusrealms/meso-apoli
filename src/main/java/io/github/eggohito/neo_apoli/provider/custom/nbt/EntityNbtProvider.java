@@ -9,11 +9,11 @@ import io.github.eggohito.neo_apoli.util.EntityParameter;
 import io.github.eggohito.neo_apoli.util.context.Context;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.context.ContextParameter;
 
 import java.util.Set;
 
@@ -43,7 +43,7 @@ public final class EntityNbtProvider extends NbtProvider {
 	}
 
 	@Override
-	public Set<ContextParameter<?>> getAllowedParameters() {
+	public Set<LootContextParameter<?>> getAllowedParameters() {
 		return Set.of(source().getParameter());
 	}
 

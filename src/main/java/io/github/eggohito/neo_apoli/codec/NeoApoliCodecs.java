@@ -17,6 +17,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.nbt.visitor.StringNbtWriter;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.ActionResult;
@@ -71,7 +72,7 @@ public class NeoApoliCodecs {
 		str -> {
 
 			try {
-				return DataResult.success(StringNbtReaderAccessor.getDefaultReader().read(str));
+				return DataResult.success(StringNbtReader.parse(str));
 			}
 
 			catch (CommandSyntaxException e) {
@@ -82,9 +83,7 @@ public class NeoApoliCodecs {
 		nbtElement -> {
 
 			StringNbtWriter nbtWriter = new StringNbtWriter();
-			nbtElement.accept(nbtWriter);
-
-			return nbtWriter.getString();
+			return nbtWriter.apply(nbtElement);
 
 		}
 	);
@@ -100,7 +99,7 @@ public class NeoApoliCodecs {
 		str -> {
 
 			try {
-				return DataResult.success(BlockArgumentParser.block(Registries.BLOCK, str, true).blockState());
+				return DataResult.success(BlockArgumentParser.block(Registries.BLOCK.getReadOnlyWrapper(), str, true).blockState());
 			}
 
 			catch (CommandSyntaxException e) {

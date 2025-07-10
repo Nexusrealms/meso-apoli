@@ -58,7 +58,7 @@ public final class NbtStringProvider extends StringProvider {
 
 			if (size == 1) {
 				NbtElement element = elements.getFirst();
-				return element.asString().orElseGet(element::toString);
+				return element.asString();
 			}
 
 			else if (size > 1) {

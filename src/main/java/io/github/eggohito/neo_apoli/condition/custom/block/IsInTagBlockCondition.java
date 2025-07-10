@@ -6,6 +6,7 @@ import io.github.eggohito.neo_apoli.condition.BlockCondition;
 import io.github.eggohito.neo_apoli.condition.type.block.BlockConditionType;
 import io.github.eggohito.neo_apoli.condition.type.block.BlockConditionTypes;
 import io.github.eggohito.neo_apoli.util.context.Context;
+import io.github.eggohito.neo_apoli.util.meso.MesoUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.minecraft.block.Block;
@@ -26,7 +27,7 @@ public final class IsInTagBlockCondition extends BlockCondition {
 	).apply(instance, IsInTagBlockCondition::new));
 
 	public static final PacketCodec<RegistryByteBuf, IsInTagBlockCondition> PACKET_CODEC = PacketCodec.tuple(
-		TagKey.packetCodec(RegistryKeys.BLOCK), IsInTagBlockCondition::tag,
+		MesoUtils.tagKeyPacketCodec(RegistryKeys.BLOCK), IsInTagBlockCondition::tag,
 		IsInTagBlockCondition::new
 	);
 
@@ -50,7 +51,7 @@ public final class IsInTagBlockCondition extends BlockCondition {
 	public void validate(ErrorReporter reporter) {
 
 		super.validate(reporter);
-		Optional<RegistryEntryLookup<Block>> blockRegistry = reporter.getWrapperLookup().flatMap(wrapperLookup -> wrapperLookup.getOptional(this.tag().registryRef()));
+		Optional<RegistryEntryLookup<Block>> blockRegistry = reporter.getWrapperLookup().flatMap(wrapperLookup -> wrapperLookup.getOptionalWrapper(this.tag().registry()));
 
 		blockRegistry.ifPresent(lookup -> lookup.getOptional(this.tag()).ifPresentOrElse(entries -> {}, () -> reporter.makeChild(".tag").report("Block tag \"" + this.tag().id() + "\" does not exist!")));
 

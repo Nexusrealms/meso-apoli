@@ -56,7 +56,7 @@ public final class BlockActionCategory extends ActionCategory<BlockAction> {
 			BlockAction blockAction = ActionArgumentType.getAction(commandContext, actionKey);
 			ContextAware.ErrorReporter reporter = new ContextAware.ErrorReporter("{" + ActionManager.getIdAsResult(blockAction).mapOrElse(Identifier::toString, error -> blockAction.toString()) + "}")
 				.withContextType(ContextTypes.BLOCK)
-				.withWrapperLookup(((ReloadableRegistriesAccessor.LookupAccessor) commandSource.getServer().getReloadableRegistries()).getRegistries());
+				.withWrapperLookup(((ReloadableRegistriesAccessor.LookupAccessor) commandSource.getServer().getReloadableRegistries()).getRegistryManager());
 
 			Context context = new Context.Builder(reporter.getContextType())
 				.withReporter(reporter)

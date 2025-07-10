@@ -7,8 +7,10 @@ import io.github.eggohito.neo_apoli.action.Action;
 import io.github.eggohito.neo_apoli.util.context.Context;
 import io.github.eggohito.neo_apoli.util.context.ContextAware;
 import io.github.eggohito.neo_apoli.util.context.ContextParameters;
+import io.github.eggohito.neo_apoli.util.meso.MesoUtils;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -41,8 +43,7 @@ public interface OffsetMetaAction<A extends Action> {
 
 	static <B extends ByteBuf, A extends Action, M extends OffsetMetaAction<A>> PacketCodec<B, M> packetCodec(PacketCodec<B, A> actionCodec, BiFunction<A, Vec3d, M> constructor) {
 		return PacketCodec.tuple(
-			actionCodec, OffsetMetaAction::action,
-			Vec3d.PACKET_CODEC, OffsetMetaAction::offset,
+			actionCodec, OffsetMetaAction::action, MesoUtils.VEC3D_PACKET_CODEC, OffsetMetaAction::offset,
 			constructor
 		);
 	}

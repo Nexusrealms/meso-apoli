@@ -14,9 +14,9 @@ import io.github.eggohito.neo_apoli.util.context.ContextTypes;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.minecraft.entity.Entity;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.context.ContextParameter;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -88,7 +88,7 @@ public final class EntitiesInRadiusNumberProvider extends NumberProvider {
 	}
 
 	@Override
-	public Set<ContextParameter<?>> getAllowedParameters() {
+	public Set<LootContextParameter<?>> getAllowedParameters() {
 		return Set.of(ContextParameters.POSITION, ContextParameters.THIS_ENTITY);
 	}
 

@@ -51,7 +51,7 @@ public final class BiEntityActionCategory extends ActionCategory<BiEntityAction>
 			BiEntityAction biEntityAction = ActionArgumentType.getAction(commandContext, actionKey);
 			ContextAware.ErrorReporter reporter = new ContextAware.ErrorReporter("{" + ActionManager.getIdAsResult(biEntityAction).mapOrElse(Identifier::toString, error -> biEntityAction.toString()) + "}")
 				.withContextType(ContextTypes.merge(ContextTypes.GENERIC, ContextTypes.BIENTITY))
-				.withWrapperLookup(((ReloadableRegistriesAccessor.LookupAccessor) commandSource.getServer().getReloadableRegistries()).getRegistries());
+				.withWrapperLookup(((ReloadableRegistriesAccessor.LookupAccessor) commandSource.getServer().getReloadableRegistries()).getRegistryManager());
 
 			Context context = new Context.Builder(reporter.getContextType())
 				.withReporter(reporter)

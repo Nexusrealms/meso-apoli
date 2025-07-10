@@ -30,6 +30,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
@@ -42,7 +43,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.util.profiler.Profilers;
 import org.jetbrains.annotations.ApiStatus;
 import org.quiltmc.parsers.json.JsonReader;
 import org.quiltmc.parsers.json.gson.GsonReader;
@@ -53,6 +53,7 @@ import java.io.BufferedReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class PowerManager implements JsonResourceReloader {
@@ -69,7 +70,7 @@ public final class PowerManager implements JsonResourceReloader {
 	private static final Object2ObjectOpenHashMap<PowerReference, PowerEntry<?>> BY_REFERENCE = new Object2ObjectOpenHashMap<>();
 	private static final Object2ObjectOpenHashMap<Power, PowerReference> BY_POWER = new Object2ObjectOpenHashMap<>();
 
-	private static final TagGroupLoader<PowerEntry<?>> TAG_LOADER = new TagGroupLoader<>((id, required) -> getEntryAsResult(PowerReference.ofPower(id)).result(), RegistryKeys.getTagPath(NeoApoliRegistryKeys.POWER));
+	private static final TagGroupLoader<PowerEntry<?>> TAG_LOADER = new TagGroupLoader<>(id -> getEntryAsResult(PowerReference.ofPower(id)).result(), RegistryKeys.getTagPath(NeoApoliRegistryKeys.POWER));
 
 	private static final Object2ObjectOpenHashMap<Identifier, List<TagGroupLoader.TrackedEntry>> PREPARED_TAGS = new Object2ObjectOpenHashMap<>();
 	private static final Object2ObjectOpenHashMap<Identifier, List<PowerEntry<?>>> TAGS = new Object2ObjectOpenHashMap<>();
@@ -81,20 +82,20 @@ public final class PowerManager implements JsonResourceReloader {
 	}
 
 	@Override
-	public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Executor prepareExecutor, Executor applyExecutor) {
+	public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
 
 		CompletableFuture<Map<Identifier, List<TagGroupLoader.TrackedEntry>>> preparedTagsFuture = CompletableFuture
-			.supplyAsync(() -> this.preparePendingTags(manager, Profilers.get()), prepareExecutor);
+			.supplyAsync(() -> this.preparePendingTags(manager), prepareExecutor);
 		CompletableFuture<Map<PowerReference.Power, Entry>> preparedElementsFuture = CompletableFuture
-			.supplyAsync(() -> this.prepareElements(manager, Profilers.get()), prepareExecutor);
+			.supplyAsync(() -> this.prepareElements(manager), prepareExecutor);
 
 		return preparedTagsFuture.thenCombine(preparedElementsFuture, Pair::of)
 			.thenCompose(synchronizer::whenPrepared)
-			.thenAcceptAsync(preparedTagsAndElements -> this.applyElements(preparedTagsAndElements.getSecond(), manager, Profilers.get()), applyExecutor);
+			.thenAcceptAsync(preparedTagsAndElements -> this.applyElements(preparedTagsAndElements.getSecond(), manager, applyProfiler), applyExecutor);
 
 	}
 
-	private Map<Identifier, List<TagGroupLoader.TrackedEntry>> preparePendingTags(ResourceManager manager, Profiler profiler) {
+	private Map<Identifier, List<TagGroupLoader.TrackedEntry>> preparePendingTags(ResourceManager manager) {
 
 		PREPARED_TAGS.clear();
 		Map<Identifier, List<TagGroupLoader.TrackedEntry>> pendingTags = TAG_LOADER.loadTags(manager);
@@ -107,7 +108,7 @@ public final class PowerManager implements JsonResourceReloader {
 	}
 
 	@ApiStatus.Internal
-	public static void applyPendingTags(DataPackContents dataPackContents) {
+	public static void applyPendingTags() {
 
 		if (PREPARED_TAGS.isEmpty()) {
 			return;
@@ -116,7 +117,7 @@ public final class PowerManager implements JsonResourceReloader {
 		LOGGER.info("Parsing power tags from data packs...");
 		TAGS.clear();
 
-		TAGS.putAll(TAG_LOADER.buildGroup(PREPARED_TAGS));
+		TAGS.putAll(TAG_LOADER.buildGroup(PREPARED_TAGS).entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().toList())));
 
 		LOGGER.info("Finished parsing power tags from data packs. Parsed {} power tag(s)", TAGS.size());
 
@@ -125,7 +126,7 @@ public final class PowerManager implements JsonResourceReloader {
 
 	}
 
-	private Map<PowerReference.Power, Entry> prepareElements(ResourceManager manager, Profiler profiler) {
+	private Map<PowerReference.Power, Entry> prepareElements(ResourceManager manager) {
 
 		Map<PowerReference.Power, Entry> prepared = new Object2ObjectOpenHashMap<>();
 		String directory = RegistryKeys.getPath(NeoApoliRegistryKeys.POWER);
@@ -213,7 +214,7 @@ public final class PowerManager implements JsonResourceReloader {
 	}
 
 	@ApiStatus.Internal
-	public static void validate(DataPackContents dataPackContents) {
+	public static void validate(DynamicRegistryManager registryManager) {
 
 		if (BY_REFERENCE.isEmpty()) {
 			return;
@@ -229,7 +230,7 @@ public final class PowerManager implements JsonResourceReloader {
 			PowerEntry<?> entry = entryIterator.next();
 			Power power = entry.value();
 
-			ContextAware.ErrorReporter reporter = new ContextAware.ErrorReporter(power.getType().contextType(), "{" + entry.reference() + "}").withWrapperLookup(((ReloadableRegistriesAccessor.LookupAccessor) dataPackContents.getReloadableRegistries()).getRegistries());
+			ContextAware.ErrorReporter reporter = new ContextAware.ErrorReporter(power.getType().contextType(), "{" + entry.reference() + "}").withWrapperLookup(registryManager);
 			power.validate(reporter);
 
 			if (!reporter.hasAnyErrors()) {

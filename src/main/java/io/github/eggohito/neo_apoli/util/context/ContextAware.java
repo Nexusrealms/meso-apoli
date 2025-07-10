@@ -4,11 +4,12 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.*;
 import io.github.eggohito.neo_apoli.util.StringDisplayable;
 import lombok.Getter;
+import net.minecraft.loot.context.LootContextParameter;
+import net.minecraft.loot.context.LootContextType;
 import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.context.ContextParameter;
-import net.minecraft.util.context.ContextType;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 public interface ContextAware {
 
-	default Set<ContextParameter<?>> getAllowedParameters() {
+	default Set<LootContextParameter<?>> getAllowedParameters() {
 		return Set.of();
 	}
 
@@ -33,7 +34,7 @@ public interface ContextAware {
 		@Getter
 		private final Optional<RegistryWrapper.WrapperLookup> wrapperLookup;
 		@Getter
-		private final ContextType contextType;
+		private final LootContextType contextType;
 
 		private final Multimap<String, String> errors;
 		private final Set<ContextKey> referenceStack;
@@ -42,7 +43,7 @@ public interface ContextAware {
 		private final String path;
 		private final Supplier<String> fullPathSupplier;
 
-		protected ErrorReporter(ErrorReporter parent, Optional<RegistryWrapper.WrapperLookup> wrapperLookup, ContextType contextType, Multimap<String, String> errors, Set<ContextKey> referenceStack, String path, Supplier<String> fullPathSupplier) {
+		protected ErrorReporter(ErrorReporter parent, Optional<RegistryWrapper.WrapperLookup> wrapperLookup, LootContextType contextType, Multimap<String, String> errors, Set<ContextKey> referenceStack, String path, Supplier<String> fullPathSupplier) {
 			this.parent = parent;
 			this.wrapperLookup = wrapperLookup;
 			this.contextType = contextType;
@@ -52,7 +53,7 @@ public interface ContextAware {
 			this.fullPathSupplier = Suppliers.memoize(fullPathSupplier::get);
 		}
 
-		public ErrorReporter(ContextType contextType, String path) {
+		public ErrorReporter(LootContextType contextType, String path) {
 			this(null, Optional.empty(), contextType, HashMultimap.create(), Set.of(), path, () -> path);
 		}
 
@@ -60,7 +61,7 @@ public interface ContextAware {
 			this(LootContextTypes.EMPTY, path);
 		}
 
-		public ErrorReporter(ContextType contextType) {
+		public ErrorReporter(LootContextType contextType) {
 			this(contextType, "");
 		}
 
@@ -84,7 +85,7 @@ public interface ContextAware {
 
 		}
 
-		public ErrorReporter withContextType(ContextType contextType) {
+		public ErrorReporter withContextType(LootContextType contextType) {
 			return new ErrorReporter(this.parent, this.wrapperLookup, contextType, this.errors, this.referenceStack, this.path, this.fullPathSupplier);
 		}
 
@@ -191,10 +192,10 @@ public interface ContextAware {
 
 		public void validate(ContextAware contextAware) {
 
-			Set<ContextParameter<?>> missingParameters = Sets.difference(contextAware.getAllowedParameters(), contextType.getAllowed());
+			Set<LootContextParameter<?>> missingParameters = Sets.difference(contextAware.getAllowedParameters(), contextType.getAllowed());
 
 			if (!missingParameters.isEmpty()) {
-				this.report("Parameters [" + missingParameters.stream().map(ContextParameter::getId).map(Identifier::toString).collect(Collectors.joining(", ")) + "] are not provided in the context for " + (contextAware instanceof StringDisplayable stringDisplayable ? stringDisplayable.asDisplayString(false) : contextAware) + "!");
+				this.report("Parameters [" + missingParameters.stream().map(LootContextParameter::getId).map(Identifier::toString).collect(Collectors.joining(", ")) + "] are not provided in the context for " + (contextAware instanceof StringDisplayable stringDisplayable ? stringDisplayable.asDisplayString(false) : contextAware) + "!");
 			}
 
 		}

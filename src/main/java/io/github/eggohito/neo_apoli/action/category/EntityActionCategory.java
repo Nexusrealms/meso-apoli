@@ -48,7 +48,7 @@ public class EntityActionCategory extends ActionCategory<EntityAction> {
 			EntityAction entityAction = ActionArgumentType.getAction(commandContext, actionKey);
 			ContextAware.ErrorReporter reporter = new ContextAware.ErrorReporter("{" + ActionManager.getIdAsResult(entityAction).mapOrElse(Identifier::toString, error -> entityAction.toString()) + "}")
 				.withContextType(ContextTypes.GENERIC)
-				.withWrapperLookup(((ReloadableRegistriesAccessor.LookupAccessor) commandSource.getServer().getReloadableRegistries()).getRegistries());
+				.withWrapperLookup(((ReloadableRegistriesAccessor.LookupAccessor) commandSource.getServer().getReloadableRegistries()).getRegistryManager());
 
 			Context context = new Context.Builder(reporter.getContextType())
 				.withReporter(reporter)

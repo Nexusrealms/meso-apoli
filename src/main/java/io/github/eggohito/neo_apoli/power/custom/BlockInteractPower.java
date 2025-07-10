@@ -259,9 +259,9 @@ public class BlockInteractPower extends Power implements Prioritized<BlockIntera
 				continue;
 
 			}
-
-			if (previousResult instanceof ActionResult.Success(ActionResult.SwingSource swingSource, ActionResult.ItemContext itemContext) && swingSource != ActionResult.SwingSource.NONE) {
-				player.swingHand(hand, swingSource == ActionResult.SwingSource.SERVER);
+			//TODO figure whats up with swing sources
+			if (previousResult.shouldSwingHand()) {
+				player.swingHand(hand, previousResult == ActionResult.SUCCESS);
 			}
 
 			return previousResult;
@@ -331,9 +331,9 @@ public class BlockInteractPower extends Power implements Prioritized<BlockIntera
 			}
 
 		}
-
-		if (modified instanceof ActionResult.Success(ActionResult.SwingSource swingSource, ActionResult.ItemContext itemContext) && swingSource != ActionResult.SwingSource.NONE) {
-			player.swingHand(hand, swingSource == ActionResult.SwingSource.SERVER);
+		//TODO i really dont know guess ill see
+		if (modified.shouldSwingHand()) {
+			player.swingHand(hand, true);
 		}
 
 		return MiscUtil.overrideResult(original, modified);

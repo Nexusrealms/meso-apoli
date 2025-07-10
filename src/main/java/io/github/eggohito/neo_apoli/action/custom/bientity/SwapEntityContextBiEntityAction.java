@@ -12,11 +12,12 @@ import io.github.eggohito.neo_apoli.util.EntityParameter;
 import io.github.eggohito.neo_apoli.util.MapCodecUtil;
 import io.github.eggohito.neo_apoli.util.PacketCodecUtil;
 import io.github.eggohito.neo_apoli.util.context.Context;
+import io.github.eggohito.neo_apoli.util.meso.MesoUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.context.ContextParameter;
 import net.minecraft.util.dynamic.Codecs;
 
 import java.util.Map;
@@ -28,7 +29,7 @@ public final class SwapEntityContextBiEntityAction extends BiEntityAction {
 
 	public static final MapCodec<SwapEntityContextBiEntityAction> CODEC = MapCodecUtil.lazy(SwapEntityContextBiEntityAction.class.getSimpleName(), () -> RecordCodecBuilder.mapCodec(instance -> instance.group(
 		BiEntityAction.CODEC.fieldOf("bientity_action").forGetter(SwapEntityContextBiEntityAction::biEntityAction),
-		Codecs.nonEmptyMap(NeoApoliCodecs.ENTITY_PARAMETER_MAP).fieldOf("parameters").forGetter(SwapEntityContextBiEntityAction::parameters)
+		MesoUtils.nonEmptyMap(NeoApoliCodecs.ENTITY_PARAMETER_MAP).fieldOf("parameters").forGetter(SwapEntityContextBiEntityAction::parameters)
 	).apply(instance, SwapEntityContextBiEntityAction::new)));
 
 	public static final PacketCodec<RegistryByteBuf, SwapEntityContextBiEntityAction> PACKET_CODEC = PacketCodecUtil.lazy(SwapEntityContextBiEntityAction.class.getSimpleName(), () -> PacketCodec.tuple(
@@ -61,9 +62,9 @@ public final class SwapEntityContextBiEntityAction extends BiEntityAction {
 	}
 
 	@Override
-	public Set<ContextParameter<?>> getAllowedParameters() {
+	public Set<LootContextParameter<?>> getAllowedParameters() {
 
-		ImmutableSet.Builder<ContextParameter<?>> builder = ImmutableSet.builder();
+		ImmutableSet.Builder<LootContextParameter<?>> builder = ImmutableSet.builder();
 		parameters().values().forEach(entityParameter -> builder.add(entityParameter.getParameter()));
 
 		return builder.build();

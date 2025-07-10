@@ -12,12 +12,12 @@ import lombok.EqualsAndHashCode;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.context.ContextParameter;
 
 import java.util.Set;
 
@@ -52,7 +52,7 @@ public final class AttributeNumberProvider extends NumberProvider {
 	@Override
 	protected Number impl(Context context) {
 
-		ContextParameter<Entity> source = source().getParameter();
+		LootContextParameter<Entity> source = source().getParameter();
 		Context sourceContext = context.makeChild(".source");
 
 		return switch (context.nullable(source)) {
@@ -81,7 +81,7 @@ public final class AttributeNumberProvider extends NumberProvider {
 	}
 
 	@Override
-	public Set<ContextParameter<?>> getAllowedParameters() {
+	public Set<LootContextParameter<?>> getAllowedParameters() {
 		return Set.of(source().getParameter());
 	}
 

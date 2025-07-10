@@ -231,7 +231,7 @@ public abstract class Power {
 		public static final PacketCodec<RegistryByteBuf, Properties> PACKET_CODEC = PacketCodec.tuple(
 			TextCodecs.UNLIMITED_REGISTRY_PACKET_CODEC, Properties::name,
 			TextCodecs.UNLIMITED_REGISTRY_PACKET_CODEC, Properties::description,
-			PacketCodecs.BOOLEAN, Properties::hidden,
+			PacketCodecs.BOOL, Properties::hidden,
 			Properties::new
 		);
 

@@ -91,7 +91,7 @@ public class PowerCommand {
 			PowerReference reference = PowerReferenceArgumentType.getExistingPowerReference(commandContext, "power");
 
 			Power power = PowerManager.get(reference);
-			Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent.ShowText(Text.of(reference.toString()))));
+			Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of(reference.toString()))));
 
 			Map<Identifier, Collection<PowerReference>> grantedPowers = Map.of(source, List.of(reference));
 			ServerCommandSource commandSource = commandContext.getSource();
@@ -239,7 +239,7 @@ public class PowerCommand {
 					if (powerReference != null) {
 
 						Power power = PowerManager.get(powerReference);
-						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent.ShowText(Text.literal(powerReference.toString()))));
+						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(powerReference.toString()))));
 
 						commandSource.sendError(Text.translatable("commands.neo-apoli.power.revoke.fail.single", targets.getFirst().getName(), powerName, source));
 
@@ -256,7 +256,7 @@ public class PowerCommand {
 					if (powerReference != null) {
 
 						Power power = PowerManager.get(powerReference);
-						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent.ShowText(Text.literal(powerReference.toString()))));
+						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(powerReference.toString()))));
 
 						commandSource.sendError(Text.stringifiedTranslatable("commands.neo-apoli.power.revoke.fail.multiple", targets.size(), powerName, source.toString()));
 
@@ -277,7 +277,7 @@ public class PowerCommand {
 					if (powerReference != null) {
 
 						Power power = PowerManager.get(powerReference);
-						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent.ShowText(Text.literal(powerReference.toString()))));
+						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(powerReference.toString()))));
 
 						commandSource.sendFeedback(() -> Text.translatable("commands.neo-apoli.power.revoke.success.single", processedTargets.getFirst().getName(), powerName, source.toString()), true);
 
@@ -294,7 +294,7 @@ public class PowerCommand {
 					if (powerReference != null) {
 
 						Power power = PowerManager.get(powerReference);
-						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent.ShowText(Text.literal(powerReference.toString()))));
+						Text powerName = power.getName().copy().styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(powerReference.toString()))));
 
 						commandSource.sendFeedback(() -> Text.translatable("commands.neo-apoli.power.revoke.success.multiple", processedTargets.size(), powerName, source.toString()), true);
 
@@ -331,7 +331,7 @@ public class PowerCommand {
 			List<PowerReference> references = List.of(reference);
 
 			ServerCommandSource commandSource = commandContext.getSource();
-			Text powerName = PowerManager.get(reference).getName().copy().styled(style -> style.withHoverEvent(new HoverEvent.ShowText(Text.literal(reference.toString()))));
+			Text powerName = PowerManager.get(reference).getName().copy().styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(reference.toString()))));
 
 			for (Entity target : targets) {
 
@@ -506,7 +506,7 @@ public class PowerCommand {
 				Text typeTooltip = Text.stringifiedTranslatable("commands.neo-apoli.power.list.info.type", Text.literal("\"" + RegistryUtil.getId(NeoApoliRegistries.POWER_TYPE, type) + "\"").formatted(Formatting.GOLD));
 
 				Text hoverTooltip = Text.translatable("commands.neo-apoli.power.list.info", idTooltip, typeTooltip, joinedSourcesTooltip);
-				HoverEvent hoverEvent = new HoverEvent.ShowText(hoverTooltip);
+				HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverTooltip);
 
 				powerTooltips.add(power.getName().copy().styled(style -> style.withHoverEvent(hoverEvent)));
 

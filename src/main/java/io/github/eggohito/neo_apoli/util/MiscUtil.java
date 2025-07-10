@@ -7,11 +7,13 @@ import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.eggohito.neo_apoli.exception.DummyCommandExceptionType;
+import io.github.eggohito.neo_apoli.mixin.access.RegistryOpsAccessor;
 import net.fabricmc.fabric.impl.resource.conditions.ResourceConditionsImpl;
-import net.fabricmc.fabric.mixin.resource.conditions.RegistryOpsAccessor;
 import net.minecraft.registry.RegistryOps;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -19,7 +21,7 @@ public class MiscUtil {
 
 	public static ImmutableBiMap<String, ActionResult> ACTION_RESULTS = ImmutableBiMap.<String, ActionResult>builder()
 		.put("success", ActionResult.SUCCESS)
-		.put("success_server", ActionResult.SUCCESS_SERVER)
+		.put("success_server", ActionResult.SUCCESS_NO_ITEM_USED)
 		.put("consume", ActionResult.CONSUME)
 		.put("fail", ActionResult.FAIL)
 		.put("pass", ActionResult.PASS)
@@ -35,19 +37,27 @@ public class MiscUtil {
 
 	@SuppressWarnings("UnstableApiUsage")
 	public static boolean isResourceConditionFulfilled(Identifier resourceId, JsonObject jsonObject, String directory, RegistryOps<JsonElement> ops) {
-		return ResourceConditionsImpl.applyResourceConditions(jsonObject, directory, resourceId, ((RegistryOpsAccessor) ops).getRegistryInfoGetter());
+		return ResourceConditionsImpl.applyResourceConditions(jsonObject, directory, resourceId, getWrapperLookupFromRegistryOps(ops));
 	}
 
 	public static boolean isResourceConditionFulfilled(Identifier resourceId, JsonElement jsonElement, String directory, RegistryOps<JsonElement> ops) {
 		return !(jsonElement instanceof JsonObject jsonObject)
 			|| isResourceConditionFulfilled(resourceId, jsonObject, directory, ops);
 	}
-
+	//TODO figure out how to backport this
 	public static boolean shouldOverrideResult(ActionResult oldResult, ActionResult newResult) {
-		return (newResult.isAccepted() && !oldResult.isAccepted())
-			|| (newResult instanceof ActionResult.Success bSuccess && bSuccess.swingSource() != ActionResult.SwingSource.NONE && (!(oldResult instanceof ActionResult.Success aSuccess) || aSuccess.swingSource() == ActionResult.SwingSource.NONE));
+		//return (newResult.isAccepted() && !oldResult.isAccepted())
+		//	|| (newResult == ActionResult.SUCCESS && bSuccess.swingSource() != ActionResult.SwingSource.NONE && (!(oldResult instanceof ActionResult.Success aSuccess) || aSuccess.swingSource() == ActionResult.SwingSource.NONE));
+		return true;
 	}
-
+	@Nullable
+	private static RegistryWrapper.WrapperLookup getWrapperLookupFromRegistryOps(RegistryOps<?> ops){
+		RegistryOps.RegistryInfoGetter infoGetter = ((RegistryOpsAccessor) ops).getRegistryInfoGetter();
+		if (infoGetter instanceof RegistryOps.CachedRegistryInfoGetter cachedRegistryInfoGetter) {
+			return ((RegistryOpsAccessor.CachedRegistryInfoGetterAccessor) cachedRegistryInfoGetter).getRegistriesLookup();
+		}
+		return null;
+	}
 	public static ActionResult overrideResult(ActionResult oldResult, ActionResult newResult) {
 
 		if (shouldOverrideResult(oldResult, newResult)) {

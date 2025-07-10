@@ -9,12 +9,12 @@ import io.github.eggohito.neo_apoli.util.context.ContextParameters;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.context.ContextParameter;
 
 import java.util.Optional;
 import java.util.Set;
@@ -48,7 +48,7 @@ public final class BlockEntityNbtProvider extends NbtProvider {
 	}
 
 	@Override
-	public Set<ContextParameter<?>> getAllowedParameters() {
+	public Set<LootContextParameter<?>> getAllowedParameters() {
 		return Set.of(ContextParameters.BLOCK_ENTITY);
 	}
 

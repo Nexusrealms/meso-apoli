@@ -47,7 +47,7 @@ public final class ModifyBlockStatePropertyBlockAction extends BlockAction {
 	public static final PacketCodec<RegistryByteBuf, ModifyBlockStatePropertyBlockAction> PACKET_CODEC = PacketCodec.tuple(
 		StringProvider.PACKET_CODEC, ModifyBlockStatePropertyBlockAction::property,
 		PacketCodecs.optional(StringProvider.PACKET_CODEC), ModifyBlockStatePropertyBlockAction::value,
-		PacketCodecs.BOOLEAN, ModifyBlockStatePropertyBlockAction::cycle,
+		PacketCodecs.BOOL, ModifyBlockStatePropertyBlockAction::cycle,
 		ModifyBlockStatePropertyBlockAction::new
 	);
 

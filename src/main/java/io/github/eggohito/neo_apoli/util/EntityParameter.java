@@ -5,9 +5,9 @@ import io.github.eggohito.neo_apoli.util.context.ContextParameters;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import net.minecraft.entity.Entity;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.context.ContextParameter;
 
 public enum EntityParameter implements StringIdentifiable {
 
@@ -20,9 +20,9 @@ public enum EntityParameter implements StringIdentifiable {
 
 	private final String name;
 	@Getter
-	private final ContextParameter<Entity> parameter;
+	private final LootContextParameter<Entity> parameter;
 	
-	EntityParameter(String name, ContextParameter<Entity> parameter) {
+	EntityParameter(String name, LootContextParameter<Entity> parameter) {
 		this.name = name;
 		this.parameter = parameter;
 	}

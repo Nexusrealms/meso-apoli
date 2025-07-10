@@ -68,7 +68,7 @@ public interface ExecuteCommandMetaAction {
 	static CommandOutput getOutputFromEntity(Entity entity) {
 
 		if (entity instanceof ServerPlayerEntity serverPlayer && serverPlayer.networkHandler != null) {
-			return serverPlayer.getCommandOutput();
+			return serverPlayer;
 		}
 
 		else {

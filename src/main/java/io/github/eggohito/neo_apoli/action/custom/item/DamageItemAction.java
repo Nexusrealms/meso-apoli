@@ -31,7 +31,7 @@ public final class DamageItemAction extends ItemAction {
 
 	public static final PacketCodec<RegistryByteBuf, DamageItemAction> PACKET_CODEC = PacketCodec.tuple(
 		NumberProvider.PACKET_CODEC, DamageItemAction::amount,
-		PacketCodecs.BOOLEAN, DamageItemAction::ignoreUnbreaking,
+		PacketCodecs.BOOL, DamageItemAction::ignoreUnbreaking,
 		DamageItemAction::new
 	);
 

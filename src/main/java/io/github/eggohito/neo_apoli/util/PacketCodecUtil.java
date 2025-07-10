@@ -69,7 +69,7 @@ public final class PacketCodecUtil {
 	public static <B extends ByteBuf, E extends Enum<E>> PacketCodec<B, E> enumType(Class<E> enumClass) {
 
 		ToIntFunction<E> toOrdinal = Enum::ordinal;
-		IntFunction<E> fromOrdinal = ValueLists.createIndexToValueFunction(toOrdinal, enumClass.getEnumConstants(), ValueLists.OutOfBoundsHandling.CLAMP);
+		IntFunction<E> fromOrdinal = ValueLists.createIdToValueFunction(toOrdinal, enumClass.getEnumConstants(), ValueLists.OutOfBoundsHandling.CLAMP);
 
 		return PacketCodecs.indexed(fromOrdinal, toOrdinal).cast();
 

@@ -3,10 +3,11 @@ package io.github.eggohito.neo_apoli.util.context;
 import io.github.eggohito.neo_apoli.mixin.access.ContextParameterMapAccessor;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
+import net.minecraft.loot.context.LootContextParameter;
+import net.minecraft.loot.context.LootContextParameterSet;
+import net.minecraft.loot.context.LootContextType;
 import net.minecraft.loot.context.LootContextTypes;
-import net.minecraft.util.context.ContextParameter;
-import net.minecraft.util.context.ContextParameterMap;
-import net.minecraft.util.context.ContextType;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,18 +18,18 @@ import java.util.function.UnaryOperator;
 
 public class Context {
 
-	protected final ContextParameterMap parameters;
+	protected final LootContextParameterSet parameters;
 	@Getter
 	protected final ContextAware.ErrorReporter reporter;
 
 	@Getter
-	protected final ContextType type;
+	protected final LootContextType type;
 	@Getter
 	protected final World world;
 
 	protected final Set<ContextAware> activeEntries;
 
-	Context(ContextParameterMap parameters, ContextAware.ErrorReporter reporter, ContextType type, World world) {
+	Context(LootContextParameterSet parameters, ContextAware.ErrorReporter reporter, LootContextType type, World world) {
 		this.parameters = parameters;
 		this.reporter = reporter;
 		this.type = type;
@@ -56,20 +57,20 @@ public class Context {
 		activeEntries.remove(contextAware);
 	}
 
-	public <T> T required(ContextParameter<T> parameter) {
-		return this.parameters.getOrThrow(parameter);
+	public <T> T required(LootContextParameter<T> parameter) {
+		return this.parameters.get(parameter);
 	}
 
 	@Nullable
-	public <T> T nullable(ContextParameter<T> parameter) {
-		return this.parameters.getNullable(parameter);
+	public <T> T nullable(LootContextParameter<T> parameter) {
+		return this.parameters.getOptional(parameter);
 	}
 
-	public <T> Optional<T> optional(ContextParameter<T> parameter) {
+	public <T> Optional<T> optional(LootContextParameter<T> parameter) {
 		return Optional.ofNullable(this.nullable(parameter));
 	}
 
-	public boolean hasParameter(ContextParameter<?> parameter) {
+	public boolean hasParameter(LootContextParameter<?> parameter) {
 		return this.parameters.contains(parameter);
 	}
 
@@ -81,7 +82,7 @@ public class Context {
 		return reporter.hasAnyErrors();
 	}
 
-	public static Builder builder(ContextType contextType) {
+	public static Builder builder(LootContextType contextType) {
 		return new Builder(contextType);
 	}
 
@@ -99,25 +100,25 @@ public class Context {
 
 	public static class Builder {
 
-		private ContextType contextType;
+		private LootContextType contextType;
 		private ContextAware.ErrorReporter reporter;
 
-		private final ContextParameterMap.Builder parameters;
+		private final LootContextParameterSet.Builder parameters;
 
-		Builder(ContextType contextType, ContextParameterMap.Builder parameters, ContextAware.ErrorReporter reporter) {
+		Builder(LootContextType contextType, LootContextParameterSet.Builder parameters, ContextAware.ErrorReporter reporter) {
 			this.contextType = contextType;
 			this.parameters = parameters;
 			this.reporter = reporter;
 		}
 
-		public Builder(ContextType contextType) {
-			this(contextType, new ContextParameterMap.Builder(), new ContextAware.ErrorReporter(contextType));
+		public Builder(LootContextType contextType) {
+			this(contextType, new LootContextParameterSet.Builder(null), new ContextAware.ErrorReporter(contextType));
 		}
 
 		public Builder(Context context) {
 
-			ContextParameterMap.Builder newParameters = new ContextParameterMap.Builder();
-			((ContextParameterMapAccessor) context.parameters).getMap().forEach((parameter, obj) -> ((ContextParameterMapAccessor.BuilderAccessor) newParameters).getMap().put(parameter, obj));
+			LootContextParameterSet.Builder newParameters = new LootContextParameterSet.Builder((ServerWorld) context.getWorld());
+			((ContextParameterMapAccessor) context.parameters).getParameters().forEach((parameter, obj) -> ((ContextParameterMapAccessor.BuilderAccessor) newParameters).getParameters().put(parameter, obj));
 
 			this.parameters = newParameters;
 			this.contextType = context.getType();
@@ -125,7 +126,7 @@ public class Context {
 
 		}
 
-		public Builder withContextType(@NotNull ContextType contextType) {
+		public Builder withContextType(@NotNull LootContextType contextType) {
 			this.contextType = contextType;
 			return this;
 		}
@@ -141,37 +142,37 @@ public class Context {
 
 		public Builder copy() {
 
-			ContextParameterMap.Builder newParameters = new ContextParameterMap.Builder();
-			((ContextParameterMapAccessor.BuilderAccessor) this.parameters).getMap().forEach((parameter, obj) -> ((ContextParameterMapAccessor.BuilderAccessor) newParameters).getMap().put(parameter, obj));
+			LootContextParameterSet.Builder newParameters = new LootContextParameterSet.Builder(parameters.getWorld());
+			((ContextParameterMapAccessor.BuilderAccessor) this.parameters).getParameters().forEach((parameter, obj) -> ((ContextParameterMapAccessor.BuilderAccessor) newParameters).getParameters().put(parameter, obj));
 
 			return new Builder(this.contextType, newParameters, this.reporter);
 
 		}
 
-		public <T> Builder add(ContextParameter<T> parameter, @NotNull T value) {
+		public <T> Builder add(LootContextParameter<T> parameter, @NotNull T value) {
 			this.parameters.add(parameter, value);
 			return this;
 		}
 
-		public <T> Builder addNullable(ContextParameter<T> parameter, @Nullable T value) {
-			this.parameters.addNullable(parameter, value);
+		public <T> Builder addNullable(LootContextParameter<T> parameter, @Nullable T value) {
+			this.parameters.addOptional(parameter, value);
 			return this;
 		}
 
-		public <T> Builder addOptional(ContextParameter<T> parameter, Optional<T> value) {
+		public <T> Builder addOptional(LootContextParameter<T> parameter, Optional<T> value) {
 			return addNullable(parameter, value.orElse(null));
 		}
 
-		public <T> T required(ContextParameter<T> parameter) {
-			return this.parameters.getOrThrow(parameter);
+		public <T> T required(LootContextParameter<T> parameter) {
+			return this.parameters.get(parameter);
 		}
 
 		@Nullable
-		public <T> T nullable(ContextParameter<T> parameter) {
-			return this.parameters.getNullable(parameter);
+		public <T> T nullable(LootContextParameter<T> parameter) {
+			return this.parameters.get(parameter);
 		}
 
-		public <T> Optional<T> optional(ContextParameter<T> parameter) {
+		public <T> Optional<T> optional(LootContextParameter<T> parameter) {
 			return Optional.ofNullable(this.nullable(parameter));
 		}
 

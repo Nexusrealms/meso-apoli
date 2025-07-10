@@ -19,7 +19,7 @@ public interface ConstantMetaCondition {
 	}
 
 	static <M extends ConstantMetaCondition> PacketCodec<ByteBuf, M> packetCodec(Boolean2ObjectFunction<M> constructor) {
-		return PacketCodecs.BOOLEAN.xmap(constructor, ConstantMetaCondition::value);
+		return PacketCodecs.BOOL.xmap(constructor, ConstantMetaCondition::value);
 	}
 
 }

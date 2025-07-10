@@ -7,6 +7,7 @@ import io.github.eggohito.neo_apoli.condition.type.entity.EntityConditionType;
 import io.github.eggohito.neo_apoli.condition.type.entity.EntityConditionTypes;
 import io.github.eggohito.neo_apoli.util.context.Context;
 import io.github.eggohito.neo_apoli.util.context.ContextParameters;
+import io.github.eggohito.neo_apoli.util.meso.MesoUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.minecraft.entity.EntityType;
@@ -27,7 +28,7 @@ public final class IsInTagEntityCondition extends EntityCondition {
 	).apply(instance, IsInTagEntityCondition::new));
 
 	public static final PacketCodec<RegistryByteBuf, IsInTagEntityCondition> PACKET_CODEC = PacketCodec.tuple(
-		TagKey.packetCodec(RegistryKeys.ENTITY_TYPE), IsInTagEntityCondition::tag,
+		MesoUtils.tagKeyPacketCodec(RegistryKeys.ENTITY_TYPE), IsInTagEntityCondition::tag,
 		IsInTagEntityCondition::new
 	);
 
@@ -51,7 +52,7 @@ public final class IsInTagEntityCondition extends EntityCondition {
 	public void validate(ErrorReporter reporter) {
 
 		super.validate(reporter);
-		Optional<RegistryEntryLookup<EntityType<?>>> entityTypeRegistry = reporter.getWrapperLookup().flatMap(wrapperLookup -> wrapperLookup.getOptional(this.tag().registryRef()));
+		Optional<RegistryEntryLookup<EntityType<?>>> entityTypeRegistry = reporter.getWrapperLookup().flatMap(wrapperLookup -> wrapperLookup.getOptionalWrapper(this.tag().registry()));
 
 		entityTypeRegistry.ifPresent(lookup -> lookup.getOptional(this.tag()).ifPresentOrElse(entries -> {}, () -> reporter.makeChild(".tag").report("Entity type tag \"" + this.tag().id() + "\" does not exist!")));
 

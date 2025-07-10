@@ -1,5 +1,6 @@
 package io.github.eggohito.neo_apoli.mixin.access;
 
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.ReloadableRegistries;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +13,7 @@ public interface ReloadableRegistriesAccessor {
 	interface LookupAccessor {
 
 		@Accessor
-		RegistryWrapper.WrapperLookup getRegistries();
+		DynamicRegistryManager.Immutable getRegistryManager();
 
 	}
 
