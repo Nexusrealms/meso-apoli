@@ -15,6 +15,14 @@ maven {
     name = "nexusrelamsSnapshots"
     url = uri("https://maven.riftrealms.de/snapshots")
 }
+maven {
+	name = "QuiltMC"
+	url = "https://maven.quiltmc.org/repository/release"
+}
+maven {
+	name = "Ladysnake Mods"
+	url = "https://maven.ladysnake.org/releases"
+}
 ```
 Into the `dependencies` block:
 ```
